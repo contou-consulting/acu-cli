@@ -17,6 +17,31 @@ and the identity provider's discovery document
 | `acu-cli`          | CLI entry point: commands, config, token store, schema cache   |
 | `acu-cli.core`     | Acumatica REST/OAuth client library (bearer auth, CRUD, actions, OIDC) |
 
+## Installing
+
+The CLI ships as a [.NET tool](https://learn.microsoft.com/en-us/dotnet/core/tools/global-tools) on nuget.org:
+
+```bash
+dotnet tool install --global Contou.AcuCli
+acu --version
+```
+
+Inside an agent container, install it in your `Dockerfile` (any image with the .NET 10
+SDK will do):
+
+```dockerfile
+RUN dotnet tool install --global Contou.AcuCli
+ENV PATH="$PATH:/root/.dotnet/tools"
+```
+
+Then the agent can sign in and drive Acumatica:
+
+```bash
+acu login --url https://acumatica.example.com --client-id <id> --client-secret <secret>
+acu use contou                       # switch site
+acu get Customer --top 5 --select CustomerID,CustomerName --agent
+```
+
 ## Building
 
 ```bash
@@ -29,10 +54,17 @@ Run it directly during development:
 dotnet run --project acu-cli -- <command> [options]
 ```
 
-For day-to-day use, publish it and put it on your `PATH`:
+To release a version, push a tag — CI publishes the package to nuget.org:
 
 ```bash
-dotnet publish acu-cli -c Release -o ./publish
+git tag v0.1.0 && git push --tags   # .github/workflows/publish.yml does the rest
+```
+
+To publish a package manually instead:
+
+```bash
+dotnet pack acu-cli -c Release -o dist
+dotnet nuget push dist/*.nupkg --api-key <key> --source https://api.nuget.org/v3/index.json
 ```
 
 ## Getting started

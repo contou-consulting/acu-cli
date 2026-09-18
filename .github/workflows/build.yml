@@ -1,0 +1,30 @@
+name: build
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 10.0.x
+
+      - name: Restore
+        run: dotnet restore
+
+      - name: Build
+        run: dotnet build --no-restore -c Release -warnaserror
+
+      - name: Pack (verify the tool package builds)
+        run: dotnet pack acu-cli --no-build -c Release -o dist
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: tool-package
+          path: dist/*.nupkg

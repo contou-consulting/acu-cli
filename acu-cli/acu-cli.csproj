@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <ItemGroup>
     <ProjectReference Include="..\acu-cli.core\acu-cli.core.csproj" />
@@ -14,6 +14,25 @@
     <RootNamespace>acu_cli</RootNamespace>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
+
+    <!-- .NET tool packaging: installs the `acu` command via `dotnet tool install` -->
+    <PackAsTool>true</PackAsTool>
+    <ToolCommandName>acu</ToolCommandName>
+    <PackageId>Contou.AcuCli</PackageId>
+    <Version>0.1.0</Version>
+    <Authors>Contou Consulting</Authors>
+    <Description>CLI for Acumatica ERP's contract-based REST API. OAuth 2.0 only, YAML-first input/output for humans and AI agents, per-site logins (acu use), endpoint schema discovery (acu schema), OData-style queries, CRUD, actions and a raw escape hatch.</Description>
+    <PackageTags>acumatica;cli;erp;rest;oauth;yaml;agent</PackageTags>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <PackageProjectUrl>https://github.com/contou-consulting/acu-cli</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/contou-consulting/acu-cli</RepositoryUrl>
+    <RepositoryType>git</RepositoryType>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
+    <Deterministic>true</Deterministic>
   </PropertyGroup>
+
+  <ItemGroup>
+    <None Include="..\README.md" Link="README.md" Pack="true" PackagePath="\" />
+  </ItemGroup>
 
 </Project>
