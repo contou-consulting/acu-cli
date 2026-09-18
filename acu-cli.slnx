@@ -1,0 +1,4 @@
+<Solution>
+  <Project Path="acu-cli.core/acu-cli.core.csproj" />
+  <Project Path="acu-cli/acu-cli.csproj" />
+</Solution>
