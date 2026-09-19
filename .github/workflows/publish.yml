@@ -1,11 +1,13 @@
 name: publish
 
-# Publishes the acu-cli .NET tool to nuget.org when a version tag (v1.2.3) is pushed.
-# Authentication uses NuGet trusted publishing (GitHub OIDC federation) — no stored API
-# key. The .NET CLI does not fetch the OIDC token itself, so we acquire it with
-# github-script and pass it via --api-key; nuget.org validates it against the trusted
-# publisher registered for package ID Contou.AcuCli (repository contou-consulting/acu-cli,
-# workflow path .github/workflows/publish.yml).
+# Publishes the acu-cli .NET tool to nuget.org when a version tag (v1.2.3) is pushed,
+# using trusted publishing (no long-lived API key):
+#   1. NuGet/login@v1 exchanges the GitHub OIDC token for a 1-hour nuget.org API key
+#   2. dotnet nuget push uses that temporary key
+# Setup on nuget.org (Account Settings > Trusted Publishing) and GitHub:
+#   - Trusted-publisher policy: owner `contou-consulting`, repository `acu-cli`,
+#     workflow file `publish.yml` (file name only), environment `nuget` (or blank)
+#   - Repo secret NUGET_USER: your nuget.org profile name (username, not email)
 on:
   push:
     tags: ['v*']
@@ -17,7 +19,7 @@ permissions:
 jobs:
   publish:
     runs-on: ubuntu-latest
-    environment: nuget   # must match the trusted-publisher registration on nuget.org
+    environment: nuget   # must match the trusted-publisher policy on nuget.org
     steps:
       - uses: actions/checkout@v4
 
@@ -34,17 +36,15 @@ jobs:
       - name: Pack
         run: dotnet pack acu-cli --no-build -c Release -o dist -p:Version="$VERSION"
 
-      - name: Fetch GitHub OIDC token
-        id: oidc
-        uses: actions/github-script@v7
+      - name: NuGet login (OIDC -> temporary API key)
+        uses: NuGet/login@v1
+        id: login
         with:
-          script: |
-            const token = await core.getIDToken();
-            core.setOutput('token', token);
+          user: ${{ secrets.NUGET_USER }}
 
-      - name: Push to nuget.org (trusted publishing)
+      - name: Push to nuget.org
         run: >
           dotnet nuget push dist/*.nupkg
-          --api-key "${{ steps.oidc.outputs.token }}"
+          --api-key "${{ steps.login.outputs.NUGET_API_KEY }}"
           --source https://api.nuget.org/v3/index.json
           --skip-duplicate
