@@ -1,15 +1,20 @@
 name: publish
 
 # Publishes the acu-cli .NET tool to nuget.org when a version tag (v1.2.3) is pushed.
-# Requires the NUGET_API_KEY secret (nuget.org > your account > API Keys).
+# Authentication uses NuGet trusted publishing (GitHub OIDC federation) — no API key
+# secret. The trusted publisher on nuget.org must be registered for package ID
+# Contou.AcuCli with this repository and workflow path (.github/workflows/publish.yml).
 on:
   push:
     tags: ['v*']
 
+permissions:
+  contents: read
+  id-token: write
+
 jobs:
   publish:
     runs-on: ubuntu-latest
-    environment: nuget
     steps:
       - uses: actions/checkout@v4
 
@@ -26,9 +31,8 @@ jobs:
       - name: Pack
         run: dotnet pack acu-cli --no-build -c Release -o dist -p:Version="$VERSION"
 
-      - name: Push to nuget.org
+      - name: Push to nuget.org (trusted publishing)
         run: >
           dotnet nuget push dist/*.nupkg
-          --api-key "${{ secrets.NUGET_API_KEY }}"
           --source https://api.nuget.org/v3/index.json
           --skip-duplicate
