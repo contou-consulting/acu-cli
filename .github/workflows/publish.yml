@@ -17,6 +17,7 @@ permissions:
 jobs:
   publish:
     runs-on: ubuntu-latest
+    environment: nuget   # must match the trusted-publisher registration on nuget.org
     steps:
       - uses: actions/checkout@v4
 
